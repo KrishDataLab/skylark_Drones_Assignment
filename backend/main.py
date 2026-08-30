@@ -31,15 +31,7 @@ app.include_router(health.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(export.router, prefix="/api")
 
-# Serve frontend static files from frontend/dist
+# Mount frontend static files ONLY if running locally or non-Vercel environment
 frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
-if os.path.exists(frontend_dist):
+if not os.environ.get("VERCEL") and os.path.exists(frontend_dist):
     app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
-else:
-    @app.get("/")
-    async def root_fallback():
-        return {
-            "status": "online",
-            "app": settings.app_name,
-            "version": settings.version
-        }
