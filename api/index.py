@@ -4,9 +4,14 @@ import os
 import sys
 import asyncio
 
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
+# Ensure all parent and root directories are in sys.path
+file_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(file_dir)
+cwd_dir = os.getcwd()
+
+for d in [file_dir, parent_dir, cwd_dir]:
+    if d and d not in sys.path:
+        sys.path.insert(0, d)
 
 _agent = None
 
