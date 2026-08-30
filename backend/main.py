@@ -31,7 +31,15 @@ app.include_router(health.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(export.router, prefix="/api")
 
-# Mount frontend dist static files if built locally (Vercel Edge CDN handles static files natively)
+# Serve frontend static files from frontend/dist
 frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
-if not os.environ.get("VERCEL") and os.path.exists(frontend_dist):
+if os.path.exists(frontend_dist):
     app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
+else:
+    @app.get("/")
+    async def root_fallback():
+        return {
+            "status": "online",
+            "app": settings.app_name,
+            "version": settings.version
+        }
