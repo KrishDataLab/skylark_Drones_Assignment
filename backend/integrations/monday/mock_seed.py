@@ -1,46 +1,17 @@
-import os
-import json
 from typing import List, Tuple
 from backend.data.models import Deal, WorkOrder, DataQualitySummary
 from backend.data.normalizer import parse_float, parse_date, normalize_sector, normalize_status
+from backend.data.seed_data_embed import RAW_DEALS_RECORDS, RAW_WORK_ORDERS_RECORDS
 
 def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], DataQualitySummary]:
     deals: List[Deal] = []
     work_orders: List[WorkOrder] = []
     
-    # Search paths for seed_records.json
-    pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    search_paths = [
-        os.path.join(pkg_dir, "data", "seed_records.json"),
-        os.path.join(base_path, "backend", "data", "seed_records.json"),
-        os.path.join(base_path, "seed_records.json"),
-        os.path.join("/tmp", "seed_records.json")
-    ]
-    
-    raw_deals = []
-    raw_wos = []
-    
-    json_path = None
-    for p in search_paths:
-        if os.path.exists(p):
-            json_path = p
-            break
-            
-    if json_path and os.path.exists(json_path):
-        try:
-            with open(json_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                raw_deals = data.get("deals", [])
-                raw_wos = data.get("work_orders", [])
-        except Exception:
-            raw_deals = []
-            raw_wos = []
-            
     deals_missing_val = 0
     wo_missing_amt = 0
     wo_missing_dates = 0
     
-    for idx, row in enumerate(raw_deals):
+    for idx, row in enumerate(RAW_DEALS_RECORDS):
         val, missing_val = parse_float(row.get("Masked Deal value"))
         if missing_val:
             deals_missing_val += 1
@@ -63,7 +34,7 @@ def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], D
         )
         deals.append(deal)
         
-    for idx, row in enumerate(raw_wos):
+    for idx, row in enumerate(RAW_WORK_ORDERS_RECORDS):
         amt_excl, missing_amt = parse_float(row.get("Amount in Rupees (Excl of GST) (Masked)"))
         amt_incl, _ = parse_float(row.get("Amount in Rupees (Incl of GST) (Masked)"))
         billed_excl, _ = parse_float(row.get("Billed Value in Rupees (Excl of GST.) (Masked)"))
