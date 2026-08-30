@@ -8,18 +8,33 @@ def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], D
     deals: List[Deal] = []
     work_orders: List[WorkOrder] = []
     
-    # Locate seed_records.json
-    json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "seed_records.json")
-    if not os.path.exists(json_path):
-        json_path = os.path.join(base_path, "seed_records.json")
+    # Search paths for seed_records.json
+    pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    search_paths = [
+        os.path.join(pkg_dir, "data", "seed_records.json"),
+        os.path.join(base_path, "backend", "data", "seed_records.json"),
+        os.path.join(base_path, "seed_records.json"),
+        os.path.join("/tmp", "seed_records.json")
+    ]
     
     raw_deals = []
     raw_wos = []
-    if os.path.exists(json_path):
-        with open(json_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            raw_deals = data.get("deals", [])
-            raw_wos = data.get("work_orders", [])
+    
+    json_path = None
+    for p in search_paths:
+        if os.path.exists(p):
+            json_path = p
+            break
+            
+    if json_path and os.path.exists(json_path):
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                raw_deals = data.get("deals", [])
+                raw_wos = data.get("work_orders", [])
+        except Exception:
+            raw_deals = []
+            raw_wos = []
             
     deals_missing_val = 0
     wo_missing_amt = 0
