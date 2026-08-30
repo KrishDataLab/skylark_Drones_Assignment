@@ -13,6 +13,18 @@ from backend.agent.bi_agent import BIAgent
 
 agent = BIAgent()
 
+def run_async_query(query: str):
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+    return loop.run_until_complete(agent.process_query(query))
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         dist_html = os.path.join(root_dir, 'frontend', 'dist', 'index.html')
@@ -67,8 +79,8 @@ class handler(BaseHTTPRequestHandler):
         raw_q = req_data.get('query', '')
         
         try:
-            # Delegate directly to deterministic BI Engine
-            result = asyncio.run(agent.process_query(raw_q))
+            # Delegate directly to deterministic BI Engine via thread-safe event loop
+            result = run_async_query(raw_q)
             res = result.model_dump()
         except Exception as err:
             res = {
