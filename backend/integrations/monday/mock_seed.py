@@ -7,6 +7,26 @@ from backend.data.normalizer import parse_float, parse_date, normalize_sector, n
 DEALS_CSV = "Deal funnel Data.xlsx - Deal tracker.csv"
 WORK_ORDERS_CSV = "Work_Order_Tracker Data.xlsx - work order tracker.csv"
 
+def find_file(filename: str, pkg_filename: str, base_path: str = ".") -> str:
+    # 1. Check inside backend/data/
+    pkg_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data")
+    pkg_path = os.path.join(pkg_dir, pkg_filename)
+    if os.path.exists(pkg_path):
+        return pkg_path
+    
+    # 2. Check base_path
+    path1 = os.path.join(base_path, filename)
+    if os.path.exists(path1):
+        return path1
+        
+    # 3. Check root dir
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    path2 = os.path.join(root_dir, filename)
+    if os.path.exists(path2):
+        return path2
+        
+    return pkg_path
+
 def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], DataQualitySummary]:
     deals: List[Deal] = []
     work_orders: List[WorkOrder] = []
@@ -16,7 +36,7 @@ def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], D
     wo_missing_dates = 0
     
     # Load Deals
-    deals_path = os.path.join(base_path, DEALS_CSV)
+    deals_path = find_file(DEALS_CSV, "deals_seed.csv", base_path)
     if os.path.exists(deals_path):
         with open(deals_path, mode="r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
@@ -44,7 +64,7 @@ def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], D
                 deals.append(deal)
                 
     # Load Work Orders
-    wo_path = os.path.join(base_path, WORK_ORDERS_CSV)
+    wo_path = find_file(WORK_ORDERS_CSV, "work_orders_seed.csv", base_path)
     if os.path.exists(wo_path):
         with open(wo_path, mode="r", encoding="utf-8-sig") as f:
             all_rows = list(csv.reader(f))
