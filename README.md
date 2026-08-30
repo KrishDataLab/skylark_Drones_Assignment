@@ -1,5 +1,7 @@
 # Skylark Drones — Monday.com Business Intelligence Agent
 
+![Skylark Drones BI Agent Dashboard Preview](docs/assets/dashboard_preview.png)
+
 A production-grade, conversational Business Intelligence (BI) and Operational Decision Engine built for executive leadership at Skylark Drones. The system translates natural-language business queries into structured BI intents, normalizes dirty source records, and executes pure deterministic mathematical calculations over sales pipeline and project execution data. By completely decoupling natural-language intent parsing from financial calculation logic, the agent delivers grounded, reproducible, and 100% hallucination-free executive metrics.
 
 ---
