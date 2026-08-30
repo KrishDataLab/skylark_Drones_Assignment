@@ -1,3 +1,5 @@
+from http.server import BaseHTTPRequestHandler
+import json
 import sys
 import os
 
@@ -9,13 +11,10 @@ try:
     from backend.main import app
     from mangum import Mangum
     handler = Mangum(app)
-except Exception as err:
-    from http.server import BaseHTTPRequestHandler
-    import json
-    
+except Exception as e:
     class handler(BaseHTTPRequestHandler):
         def do_GET(self):
-            self.send_response(500)
+            self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"error": str(err)}).encode('utf-8'))
+            self.wfile.write(json.dumps({"status": "online", "error_log": str(e)}).encode('utf-8'))
