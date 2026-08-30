@@ -3,23 +3,9 @@ import json
 import os
 import sys
 
-INDEX_HTML = """<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Skylark Drones — Monday.com BI Agent</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-df306fe1.js"></script>
-    <link rel="stylesheet" href="/assets/index-bff3d863.css">
-  </head>
-  <body class="bg-slate-950 text-slate-100 antialiased font-outfit">
-    <div id="root"></div>
-  </body>
-</html>
-"""
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -41,12 +27,13 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
         else:
-            # Always serve HTML dashboard on root GET requests
+            res = {"status": "online"}
+            body = json.dumps(res).encode('utf-8')
             self.send_response(200)
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            self.wfile.write(INDEX_HTML.encode('utf-8'))
+            self.wfile.write(body)
 
     def do_POST(self):
         try:
