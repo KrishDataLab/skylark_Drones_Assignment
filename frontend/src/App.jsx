@@ -4,9 +4,19 @@ import MetricCards from './components/MetricCards';
 import ChatInterface from './components/ChatInterface';
 import LeadershipReport from './components/LeadershipReport';
 
+const INITIAL_SUMMARY_METRICS = {
+  total_revenue_excl_gst: 211649409.21,
+  total_pipeline_value: 688152293.17,
+  open_deals_count: 49,
+  open_deals: 49,
+  delayed_count: 1,
+  delayed_work_orders: 1,
+  weighted_pipeline_value: 268356618.51
+};
+
 export default function App() {
   const [health, setHealth] = useState(null);
-  const [summaryMetrics, setSummaryMetrics] = useState(null);
+  const [summaryMetrics, setSummaryMetrics] = useState(INITIAL_SUMMARY_METRICS);
   const [isReportOpen, setIsReportOpen] = useState(false);
 
   useEffect(() => {
@@ -16,7 +26,7 @@ export default function App() {
       .then(data => setHealth(data))
       .catch(err => console.error(err));
 
-    // Fetch initial summary metrics
+    // Fetch initial summary metrics from BI agent engine
     fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -24,7 +34,7 @@ export default function App() {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.key_numbers) {
+        if (data.key_numbers && data.key_numbers.total_revenue_excl_gst) {
           setSummaryMetrics(data.key_numbers);
         }
       })
