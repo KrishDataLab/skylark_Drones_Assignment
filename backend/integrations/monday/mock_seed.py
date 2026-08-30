@@ -1,20 +1,31 @@
 import os
-import csv
+import json
 from typing import List, Tuple
 from backend.data.models import Deal, WorkOrder, DataQualitySummary
 from backend.data.normalizer import parse_float, parse_date, normalize_sector, normalize_status
-from backend.data.seed_records import RAW_DEALS_RECORDS, RAW_WORK_ORDERS_RECORDS
 
 def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], DataQualitySummary]:
     deals: List[Deal] = []
     work_orders: List[WorkOrder] = []
     
+    # Locate seed_records.json
+    json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "seed_records.json")
+    if not os.path.exists(json_path):
+        json_path = os.path.join(base_path, "seed_records.json")
+    
+    raw_deals = []
+    raw_wos = []
+    if os.path.exists(json_path):
+        with open(json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            raw_deals = data.get("deals", [])
+            raw_wos = data.get("work_orders", [])
+            
     deals_missing_val = 0
     wo_missing_amt = 0
     wo_missing_dates = 0
     
-    # Load Deals from embedded Python dataset
-    for idx, row in enumerate(RAW_DEALS_RECORDS):
+    for idx, row in enumerate(raw_deals):
         val, missing_val = parse_float(row.get("Masked Deal value"))
         if missing_val:
             deals_missing_val += 1
@@ -37,8 +48,7 @@ def load_seed_data(base_path: str = ".") -> Tuple[List[Deal], List[WorkOrder], D
         )
         deals.append(deal)
         
-    # Load Work Orders from embedded Python dataset
-    for idx, row in enumerate(RAW_WORK_ORDERS_RECORDS):
+    for idx, row in enumerate(raw_wos):
         amt_excl, missing_amt = parse_float(row.get("Amount in Rupees (Excl of GST) (Masked)"))
         amt_incl, _ = parse_float(row.get("Amount in Rupees (Incl of GST) (Masked)"))
         billed_excl, _ = parse_float(row.get("Billed Value in Rupees (Excl of GST.) (Masked)"))
