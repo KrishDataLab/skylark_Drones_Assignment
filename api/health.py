@@ -6,6 +6,7 @@ if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
 from fastapi import FastAPI
+from mangum import Mangum
 from backend.config.settings import settings
 from backend.integrations.monday.client import MondayClient
 
@@ -26,3 +27,5 @@ async def health_check():
             "is_configured": is_live
         }
     }
+
+handler = Mangum(app)

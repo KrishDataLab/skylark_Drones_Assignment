@@ -6,6 +6,7 @@ if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
 from fastapi import FastAPI
+from mangum import Mangum
 from backend.api.routes.export import generate_leadership_report
 
 app = FastAPI()
@@ -15,3 +16,5 @@ app = FastAPI()
 @app.get("/leadership-update")
 async def get_leadership_report():
     return await generate_leadership_report()
+
+handler = Mangum(app)

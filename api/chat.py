@@ -6,6 +6,7 @@ if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
 from fastapi import FastAPI, HTTPException
+from mangum import Mangum
 from pydantic import BaseModel
 from backend.agent.bi_agent import BIAgent
 
@@ -22,3 +23,5 @@ async def process_chat(req: ChatRequest):
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
     res = await agent.process_query(req.query.strip())
     return res.dict()
+
+handler = Mangum(app)
