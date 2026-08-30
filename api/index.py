@@ -1,8 +1,13 @@
 import json
+import os
 
 def app(environ, start_response):
     path = environ.get('PATH_INFO', '')
     method = environ.get('REQUEST_METHOD', 'GET')
+    
+    # Root directory pathing
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dist_html = os.path.join(root_dir, 'frontend', 'dist', 'index.html')
     
     if method == 'POST':
         try:
@@ -70,7 +75,17 @@ def app(environ, start_response):
                 "Completed deterministic calculations & response formatting."
             ]
         }
-    else:
+        status = '200 OK'
+        response_headers = [
+            ('Content-Type', 'application/json; charset=utf-8'),
+            ('Access-Control-Allow-Origin', '*'),
+            ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
+            ('Access-Control-Allow-Headers', 'Content-Type')
+        ]
+        start_response(status, response_headers)
+        return [json.dumps(res, ensure_ascii=False).encode('utf-8')]
+
+    elif 'health' in path:
         res = {
             "status": "online",
             "app": "Skylark Drones Monday.com BI Agent",
@@ -81,13 +96,33 @@ def app(environ, start_response):
                 "is_configured": False
             }
         }
-
-    status = '200 OK'
-    response_headers = [
-        ('Content-Type', 'application/json; charset=utf-8'),
-        ('Access-Control-Allow-Origin', '*'),
-        ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'),
-        ('Access-Control-Allow-Headers', 'Content-Type')
-    ]
-    start_response(status, response_headers)
-    return [json.dumps(res, ensure_ascii=False).encode('utf-8')]
+        status = '200 OK'
+        response_headers = [
+            ('Content-Type', 'application/json; charset=utf-8'),
+            ('Access-Control-Allow-Origin', '*')
+        ]
+        start_response(status, response_headers)
+        return [json.dumps(res, ensure_ascii=False).encode('utf-8')]
+        
+    else:
+        # Serve frontend static dist index.html for root UI navigation
+        if os.path.exists(dist_html):
+            with open(dist_html, 'r', encoding='utf-8') as f:
+                content = f.read()
+            status = '200 OK'
+            response_headers = [
+                ('Content-Type', 'text/html; charset=utf-8'),
+                ('Access-Control-Allow-Origin', '*')
+            ]
+            start_response(status, response_headers)
+            return [content.encode('utf-8')]
+        else:
+            res = {
+                "status": "online",
+                "app": "Skylark Drones Monday.com BI Agent",
+                "version": "1.0.0"
+            }
+            status = '200 OK'
+            response_headers = [('Content-Type', 'application/json; charset=utf-8')]
+            start_response(status, response_headers)
+            return [json.dumps(res).encode('utf-8')]
