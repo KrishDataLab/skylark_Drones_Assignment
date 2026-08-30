@@ -1,4 +1,4 @@
-# Skylark Drones — Monday.com Business Intelligence Agent
+# Skylark Drones Monday.com Business Intelligence Agent
 
 ![Skylark Drones BI Agent Dashboard Preview](docs/assets/dashboard_preview.png)
 
