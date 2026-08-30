@@ -10,9 +10,12 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-from backend.agent.bi_agent import BIAgent
-
-agent = BIAgent()
+try:
+    from backend.agent.bi_agent import BIAgent
+    agent = BIAgent()
+except Exception as init_err:
+    agent = None
+    init_error_msg = str(init_err)
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -46,19 +49,29 @@ class handler(BaseHTTPRequestHandler):
             
         query = req_data.get("query", "").strip()
         
-        # Execute BIAgent deterministically
-        try:
-            result = asyncio.run(agent.process_query(query))
-            res = result.dict()
-        except Exception as e:
+        if agent is not None:
+            try:
+                result = asyncio.run(agent.process_query(query))
+                res = result.dict()
+            except Exception as e:
+                res = {
+                    "query": query,
+                    "direct_answer": f"Error executing query: {str(e)}",
+                    "intent": {"metric": "error", "needs_clarification": False},
+                    "key_numbers": {},
+                    "insights": [],
+                    "data_notes": ["An error occurred while executing the query calculation."],
+                    "execution_trace": [f"Execution error: {str(e)}"]
+                }
+        else:
             res = {
                 "query": query,
-                "direct_answer": f"Error processing query: {str(e)}",
+                "direct_answer": f"Initialization notice: {init_error_msg}",
                 "intent": {"metric": "error", "needs_clarification": False},
                 "key_numbers": {},
                 "insights": [],
-                "data_notes": ["An error occurred while executing the query calculation."],
-                "execution_trace": [f"Execution failed: {str(e)}"]
+                "data_notes": ["Agent initialization error."],
+                "execution_trace": [f"Init failed: {init_error_msg}"]
             }
         
         self.send_response(200)
